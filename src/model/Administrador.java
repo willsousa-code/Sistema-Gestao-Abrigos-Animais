@@ -1,3 +1,4 @@
+
 package model;
 
 public class Administrador extends Usuario {
@@ -8,7 +9,7 @@ public class Administrador extends Usuario {
                          String telefone, String nivelAcesso) {
 
         super(nome, email, senha, telefone);
-        this.nivelAcesso = nivelAcesso;
+        setNivelAcesso(nivelAcesso);
     }
 
     public String getNivelAcesso() {
@@ -16,19 +17,25 @@ public class Administrador extends Usuario {
     }
 
     public void setNivelAcesso(String nivelAcesso) {
-        this.nivelAcesso = nivelAcesso;
+        if (nivelAcesso == null || nivelAcesso.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "O nível de acesso não pode ficar vazio!"
+            );
+        }
+
+        this.nivelAcesso = nivelAcesso.trim();
     }
 
     public void gerenciarUsuarios() {
-        System.out.println("Gerenciando usuários...");
+        System.out.println("Acesso ao gerenciamento de usuários autorizado.");
     }
 
     public void gerenciarAnimais() {
-        System.out.println("Gerenciando animais...");
+        System.out.println("Acesso ao gerenciamento de animais autorizado.");
     }
 
     public void aprovarAdocao() {
-        System.out.println("Adoção aprovada pelo administrador.");
+        System.out.println("Administrador autorizado a aprovar adoções.");
     }
 
     @Override
