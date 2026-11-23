@@ -1,9 +1,9 @@
+
 package service;
 
+import java.util.List;
 import model.Atividade;
 import repository.AtividadeRepository;
-
-import java.util.List;
 
 public class AtividadeService {
 
@@ -14,6 +14,15 @@ public class AtividadeService {
     }
 
     public void cadastrar(Atividade atividade) {
+
+        if (atividade == null) {
+            throw new IllegalArgumentException("Atividade inválida!");
+        }
+
+        if (atividade.getVagas() <= 0) {
+            throw new IllegalArgumentException("A atividade precisa ter pelo menos uma vaga!");
+        }
+
         repositorio.cadastrar(atividade);
     }
 
@@ -33,7 +42,13 @@ public class AtividadeService {
     }
 
     public void excluir(int id) {
-        buscar(id);
+
+        Atividade atividade = buscar(id);
+
+        if (atividade.getVagasOcupadas() > 0) {
+            throw new IllegalArgumentException("Não é possível excluir uma atividade com participantes inscritos!");
+        }
+
         repositorio.excluir(id);
     }
 
@@ -57,7 +72,13 @@ public class AtividadeService {
     }
 
     public void cancelarInscricao(int id) {
+
         Atividade atividade = buscar(id);
+
+        if (atividade.getVagasOcupadas() <= 0) {
+            throw new IllegalArgumentException("Não existem participantes inscritos nessa atividade!");
+        }
+
         atividade.removerParticipante();
     }
 }

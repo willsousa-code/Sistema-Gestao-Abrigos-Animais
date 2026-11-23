@@ -1,3 +1,4 @@
+
 package service;
 
 import model.Animal;
@@ -9,14 +10,22 @@ public class CompatibilidadeService {
     public Compatibilidade calcular(Animal animal, Usuario usuario) {
 
         if (animal == null || usuario == null) {
-            throw new IllegalArgumentException("Dados inválidos!");
+            throw new IllegalArgumentException(
+                "Animal e interessado são obrigatórios!"
+            );
         }
 
-        Compatibilidade resultado = new Compatibilidade(animal, usuario);
+        if (!usuario.isAtivo()) {
+            throw new IllegalArgumentException(
+                "Usuário desativado não pode solicitar adoção!"
+            );
+        }
+
+        Compatibilidade resultado =
+            new Compatibilidade(animal, usuario);
 
         resultado.calcularCompatibilidade();
 
         return resultado;
     }
-
 }

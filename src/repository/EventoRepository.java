@@ -1,7 +1,10 @@
+
 package repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
 import model.Evento;
 
 public class EventoRepository {
@@ -9,18 +12,30 @@ public class EventoRepository {
     private List<Evento> eventos = new ArrayList<>();
 
     public void cadastrar(Evento evento) {
+
+        if (evento == null) {
+            throw new IllegalArgumentException("Evento inválido!");
+        }
+
+        if (buscar(evento.getId()) != null) {
+            throw new IllegalArgumentException("Evento já cadastrado!");
+        }
+
         eventos.add(evento);
     }
 
     public List<Evento> listar() {
-        return eventos;
+        return Collections.unmodifiableList(
+            new ArrayList<>(eventos)
+        );
     }
 
     public Evento buscar(int id) {
 
-        for (Evento e : eventos) {
-            if (e.getId() == id) {
-                return e;
+        for (Evento evento : eventos) {
+
+            if (evento.getId() == id) {
+                return evento;
             }
         }
 
@@ -28,19 +43,27 @@ public class EventoRepository {
     }
 
     public void excluir(int id) {
-        eventos.removeIf(e -> e.getId() == id);
+
+        Evento evento = buscar(id);
+
+        if (evento == null) {
+            throw new IllegalArgumentException("Evento não encontrado!");
+        }
+
+        eventos.remove(evento);
     }
 
     public List<Evento> listarAtivos() {
 
         List<Evento> ativos = new ArrayList<>();
 
-        for (Evento e : eventos) {
-            if (e.isAtivo()) {
-                ativos.add(e);
+        for (Evento evento : eventos) {
+
+            if (evento.isAtivo()) {
+                ativos.add(evento);
             }
         }
 
-        return ativos;
+        return Collections.unmodifiableList(ativos);
     }
 }

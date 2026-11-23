@@ -1,13 +1,16 @@
+
 package service;
 
+import java.util.List;
+
 import model.Vacina;
-import model.Veterinario;
 import model.Usuario;
+import model.Veterinario;
+
 import repository.VacinaRepository;
+
 import exception.PermissaoNegadaException;
 import exception.VacinaDuplicadaException;
-
-import java.util.List;
 
 public class VacinaService {
 
@@ -19,23 +22,42 @@ public class VacinaService {
 
     public void cadastrar(Vacina vacina, Usuario usuario) {
 
-        if (!(usuario instanceof Veterinario)) {
+        if (!(usuario instanceof Veterinario) || !usuario.isAtivo()) {
             throw new PermissaoNegadaException(
-                "Somente veterinários podem registrar vacinas."
+                "Somente veterinários ativos podem cadastrar vacinas!"
             );
         }
 
-        List<Vacina> lista = repositorio.buscarPorAnimal(
-            vacina.getAnimal().getId()
-        );
+        if (vacina == null || vacina.getAnimal() == null ||
+            vacina.getVeterinario() == null ||
+            vacina.getNome() == null ||
+            vacina.getDataAplicacao() == null) {
 
-        for (Vacina v : lista) {
+            throw new IllegalArgumentException(
+                "Os dados da vacina estão incompletos!"
+            );
+        }
 
-            if (v.getNome().equalsIgnoreCase(vacina.getNome()) &&
-                v.getDataAplicacao().equals(vacina.getDataAplicacao())) {
+        if (vacina.getVeterinario().getId() != usuario.getId()) {
+            throw new PermissaoNegadaException(
+                "O veterinário informado não corresponde ao usuário autorizado!"
+            );
+        }
 
+        for (Vacina existente : repositorio.listar()) {
+
+            boolean mesmoAnimal =
+                existente.getAnimal().getId() == vacina.getAnimal().getId();
+
+            boolean mesmoNome =
+                existente.getNome().equalsIgnoreCase(vacina.getNome());
+
+            boolean mesmaData =
+                existente.getDataAplicacao().equals(vacina.getDataAplicacao());
+
+            if (mesmoAnimal && mesmoNome && mesmaData) {
                 throw new VacinaDuplicadaException(
-                    "Essa vacina já foi registrada nessa data."
+                    "Esta vacina já foi registrada para este animal nesta data!"
                 );
             }
         }
@@ -47,30 +69,33 @@ public class VacinaService {
         return repositorio.listar();
     }
 
+    public Vacina buscar(int id) {
+
+        Vacina vacina = repositorio.buscar(id);
+
+        if (vacina == null) {
+            throw new IllegalArgumentException(
+                "Vacina não encontrada!"
+            );
+        }
+
+        return vacina;
+    }
+
     public List<Vacina> buscarPorAnimal(int idAnimal) {
         return repositorio.buscarPorAnimal(idAnimal);
     }
 
-    public Vacina buscar(int id) {
-
-        Vacina v = repositorio.buscar(id);
-
-        if (v == null) {
-            throw new IllegalArgumentException("Vacina não encontrada!");
-        }
-
-        return v;
-    }
-
     public void excluir(int id, Usuario usuario) {
 
-        if (!(usuario instanceof Veterinario)) {
+        if (!(usuario instanceof Veterinario) || !usuario.isAtivo()) {
             throw new PermissaoNegadaException(
-                "Somente veterinários podem excluir registros de vacinas."
+                "Somente veterinários ativos podem excluir vacinas!"
             );
         }
 
         buscar(id);
+
         repositorio.excluir(id);
     }
 }

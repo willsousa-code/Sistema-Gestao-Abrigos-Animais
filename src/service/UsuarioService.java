@@ -1,10 +1,11 @@
+
 package service;
 
-import model.Usuario;
-import repository.UsuarioRepository;
-import exception.PermissaoNegadaException;
-
 import java.util.List;
+
+import model.Usuario;
+import model.Administrador;
+import repository.UsuarioRepository;
 
 public class UsuarioService {
 
@@ -16,10 +17,19 @@ public class UsuarioService {
 
     public void cadastrar(Usuario usuario) {
 
-        Usuario existente = repositorio.buscarPorEmail(usuario.getEmail());
+        if (usuario == null) {
+            throw new IllegalArgumentException("Usuário inválido!");
+        }
 
-        if (existente != null) {
-            throw new IllegalArgumentException("Esse email já está cadastrado!");
+        if (usuario.getEmail() == null ||
+            usuario.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("E-mail inválido!");
+        }
+
+        if (repositorio.buscarPorEmail(usuario.getEmail()) != null) {
+            throw new IllegalArgumentException(
+                "Já existe um usuário cadastrado com esse e-mail!"
+            );
         }
 
         repositorio.cadastrar(usuario);
@@ -34,17 +44,22 @@ public class UsuarioService {
         Usuario usuario = repositorio.buscar(id);
 
         if (usuario == null) {
-            throw new IllegalArgumentException("Usuário não encontrado!");
+            throw new IllegalArgumentException(
+                "Usuário não encontrado!"
+            );
         }
 
         return usuario;
     }
 
     public void excluir(int id) {
+
         Usuario usuario = buscar(id);
 
-        if (usuario instanceof model.Administrador) {
-            throw new PermissaoNegadaException("Não é permitido excluir um administrador.");
+        if (usuario instanceof Administrador) {
+            throw new IllegalArgumentException(
+                "Não é permitido excluir um administrador!"
+            );
         }
 
         usuario.desativar();
@@ -52,14 +67,30 @@ public class UsuarioService {
 
     public Usuario autenticar(String email, String senha) {
 
+        if (email == null || senha == null) {
+            throw new IllegalArgumentException(
+                "E-mail e senha são obrigatórios!"
+            );
+        }
+
         Usuario usuario = repositorio.buscarPorEmail(email);
 
-        if (usuario == null || !usuario.verificarSenha(senha)) {
-            throw new PermissaoNegadaException("Email ou senha incorretos!");
+        if (usuario == null) {
+            throw new IllegalArgumentException(
+                "Usuário não encontrado!"
+            );
         }
 
         if (!usuario.isAtivo()) {
-            throw new PermissaoNegadaException("Usuário desativado!");
+            throw new IllegalArgumentException(
+                "Este usuário está desativado!"
+            );
+        }
+
+        if (!usuario.verificarSenha(senha)) {
+            throw new IllegalArgumentException(
+                "Senha incorreta!"
+            );
         }
 
         return usuario;

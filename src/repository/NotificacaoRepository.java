@@ -1,7 +1,10 @@
+
 package repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
 import model.Notificacao;
 
 public class NotificacaoRepository {
@@ -9,18 +12,30 @@ public class NotificacaoRepository {
     private List<Notificacao> notificacoes = new ArrayList<>();
 
     public void cadastrar(Notificacao notificacao) {
+
+        if (notificacao == null) {
+            throw new IllegalArgumentException("Notificação inválida!");
+        }
+
+        if (buscar(notificacao.getId()) != null) {
+            throw new IllegalArgumentException("Notificação já cadastrada!");
+        }
+
         notificacoes.add(notificacao);
     }
 
     public List<Notificacao> listar() {
-        return notificacoes;
+        return Collections.unmodifiableList(
+            new ArrayList<>(notificacoes)
+        );
     }
 
     public Notificacao buscar(int id) {
 
-        for (Notificacao n : notificacoes) {
-            if (n.getId() == id) {
-                return n;
+        for (Notificacao notificacao : notificacoes) {
+
+            if (notificacao.getId() == id) {
+                return notificacao;
             }
         }
 
@@ -28,19 +43,29 @@ public class NotificacaoRepository {
     }
 
     public void excluir(int id) {
-        notificacoes.removeIf(n -> n.getId() == id);
+
+        Notificacao notificacao = buscar(id);
+
+        if (notificacao == null) {
+            throw new IllegalArgumentException(
+                "Notificação não encontrada!"
+            );
+        }
+
+        notificacoes.remove(notificacao);
     }
 
     public List<Notificacao> listarNaoLidas() {
 
         List<Notificacao> lista = new ArrayList<>();
 
-        for (Notificacao n : notificacoes) {
-            if (!n.isLida()) {
-                lista.add(n);
+        for (Notificacao notificacao : notificacoes) {
+
+            if (!notificacao.isLida()) {
+                lista.add(notificacao);
             }
         }
 
-        return lista;
+        return Collections.unmodifiableList(lista);
     }
 }

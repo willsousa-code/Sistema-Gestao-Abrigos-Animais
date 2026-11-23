@@ -1,12 +1,15 @@
+
 package service;
 
-import model.Consulta;
-import model.Veterinario;
-import model.Usuario;
-import repository.ConsultaRepository;
-import exception.PermissaoNegadaException;
-
 import java.util.List;
+
+import model.Consulta;
+import model.Usuario;
+import model.Veterinario;
+
+import repository.ConsultaRepository;
+
+import exception.PermissaoNegadaException;
 
 public class ConsultaService {
 
@@ -16,11 +19,31 @@ public class ConsultaService {
         this.repositorio = repositorio;
     }
 
-    public void cadastrarConsulta(Consulta consulta, Usuario veterinario) {
+    public void cadastrarConsulta(Consulta consulta, Usuario usuario) {
 
-        if (!(veterinario instanceof Veterinario)) {
+        if (consulta == null) {
+            throw new IllegalArgumentException(
+                "Consulta inválida!"
+            );
+        }
+
+        if (!(usuario instanceof Veterinario) || !usuario.isAtivo()) {
             throw new PermissaoNegadaException(
-                "Somente veterinários podem registrar consultas."
+                "Somente veterinários ativos podem cadastrar consultas!"
+            );
+        }
+
+        if (consulta.getAnimal() == null ||
+            consulta.getVeterinario() == null) {
+
+            throw new IllegalArgumentException(
+                "A consulta precisa ter um animal e um veterinário!"
+            );
+        }
+
+        if (consulta.getVeterinario().getId() != usuario.getId()) {
+            throw new PermissaoNegadaException(
+                "O veterinário informado não corresponde ao usuário autorizado!"
             );
         }
 
@@ -33,13 +56,15 @@ public class ConsultaService {
 
     public Consulta buscar(int id) {
 
-        Consulta c = repositorio.buscar(id);
+        Consulta consulta = repositorio.buscar(id);
 
-        if (c == null) {
-            throw new IllegalArgumentException("Consulta não encontrada!");
+        if (consulta == null) {
+            throw new IllegalArgumentException(
+                "Consulta não encontrada!"
+            );
         }
 
-        return c;
+        return consulta;
     }
 
     public List<Consulta> buscarPorAnimal(int idAnimal) {

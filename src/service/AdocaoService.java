@@ -1,10 +1,19 @@
+
 package service;
 
-import model.*;
-import repository.AdocaoRepository;
-import exception.*;
-
 import java.util.List;
+
+import model.Adocao;
+import model.Animal;
+import model.Usuario;
+import model.Administrador;
+
+import repository.AdocaoRepository;
+
+import exception.AnimalIndisponivelException;
+import exception.AnimalEmTratamentoException;
+import exception.PermissaoNegadaException;
+import exception.AdocaoInvalidaException;
 
 public class AdocaoService {
 
@@ -16,12 +25,39 @@ public class AdocaoService {
 
     public void solicitarAdocao(Animal animal, Usuario usuario) {
 
-        if (!animal.estaDisponivelParaAdocao()) {
-            throw new AnimalIndisponivelException("Esse animal não está disponível!");
+        if (animal == null || usuario == null) {
+            throw new IllegalArgumentException(
+                "Animal e usuário são obrigatórios!"
+            );
         }
 
-        if (animal.getEstadoSaude().equalsIgnoreCase("Crítico")) {
-            throw new AnimalEmTratamentoException("Animal em tratamento crítico!");
+        if (!usuario.isAtivo()) {
+            throw new IllegalArgumentException(
+                "Usuário desativado não pode solicitar adoção!"
+            );
+        }
+
+        if (!animal.estaDisponivelParaAdocao()) {
+            throw new AnimalIndisponivelException(
+                "Este animal não está disponível para adoção!"
+            );
+        }
+
+        if ("Crítico".equalsIgnoreCase(animal.getEstadoSaude())) {
+            throw new AnimalEmTratamentoException(
+                "Animal em estado crítico não pode ser adotado!"
+            );
+        }
+
+        for (Adocao existente : repositorio.listar()) {
+
+            if (existente.getAnimal().getId() == animal.getId()
+                && "Pendente".equalsIgnoreCase(existente.getStatus())) {
+
+                throw new AdocaoInvalidaException(
+                    "Já existe uma solicitação pendente para este animal!"
+                );
+            }
         }
 
         Adocao adocao = new Adocao(animal, usuario);
@@ -31,22 +67,40 @@ public class AdocaoService {
 
     public void aprovar(int id, Usuario administrador) {
 
-        if (!(administrador instanceof Administrador)) {
-            throw new PermissaoNegadaException("Somente administradores podem aprovar adoções.");
+        if (!(administrador instanceof Administrador)
+            || !administrador.isAtivo()) {
+
+            throw new PermissaoNegadaException(
+                "Somente administradores ativos podem aprovar adoções!"
+            );
         }
 
         Adocao adocao = repositorio.buscarPorId(id);
 
         if (adocao == null) {
-            throw new AdocaoInvalidaException("Adoção não encontrada!");
+            throw new AdocaoInvalidaException(
+                "Adoção não encontrada!"
+            );
         }
 
-        if (!adocao.getStatus().equals("Pendente")) {
-            throw new AdocaoInvalidaException("Essa adoção já foi analisada.");
+        if (!"Pendente".equalsIgnoreCase(adocao.getStatus())) {
+            throw new AdocaoInvalidaException(
+                "Somente adoções pendentes podem ser aprovadas!"
+            );
         }
 
-        if (!adocao.getAnimal().estaDisponivelParaAdocao()) {
-            throw new AnimalIndisponivelException("Animal não está mais disponível!");
+        Animal animal = adocao.getAnimal();
+
+        if (!animal.estaDisponivelParaAdocao()) {
+            throw new AnimalIndisponivelException(
+                "Este animal não está mais disponível!"
+            );
+        }
+
+        if ("Crítico".equalsIgnoreCase(animal.getEstadoSaude())) {
+            throw new AnimalEmTratamentoException(
+                "Animal em estado crítico não pode ser adotado!"
+            );
         }
 
         adocao.aprovar();
@@ -54,17 +108,29 @@ public class AdocaoService {
 
     public void rejeitar(int id, Usuario administrador) {
 
-        if (!(administrador instanceof Administrador)) {
-            throw new PermissaoNegadaException("Apenas o administrador pode rejeitar.");
+        if (!(administrador instanceof Administrador)
+            || !administrador.isAtivo()) {
+
+            throw new PermissaoNegadaException(
+                "Somente administradores ativos podem rejeitar adoções!"
+            );
         }
 
-        Adocao a = repositorio.buscarPorId(id);
+        Adocao adocao = repositorio.buscarPorId(id);
 
-        if (a == null) {
-            throw new AdocaoInvalidaException("Adoção não encontrada!");
+        if (adocao == null) {
+            throw new AdocaoInvalidaException(
+                "Adoção não encontrada!"
+            );
         }
 
-        a.rejeitar();
+        if (!"Pendente".equalsIgnoreCase(adocao.getStatus())) {
+            throw new AdocaoInvalidaException(
+                "Somente adoções pendentes podem ser rejeitadas!"
+            );
+        }
+
+        adocao.rejeitar();
     }
 
     public List<Adocao> listar() {
