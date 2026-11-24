@@ -1,3 +1,4 @@
+
 package model;
 
 import java.time.LocalDateTime;
@@ -8,16 +9,30 @@ public class Relatorio {
     private String titulo;
     private String descricao;
     private String tipo;
-    private LocalDateTime dataGeracao;
+    private final LocalDateTime dataGeracao;
 
     private static int contadorId = 1;
 
     public Relatorio(String titulo, String descricao, String tipo) {
+
+        validarTexto(titulo, "O título do relatório não pode ficar vazio!");
+        validarTexto(
+            descricao,
+            "A descrição do relatório não pode ficar vazia!"
+        );
+        validarTexto(tipo, "O tipo do relatório não pode ficar vazio!");
+
         this.id = contadorId++;
-        this.titulo = titulo;
-        this.descricao = descricao;
-        this.tipo = tipo;
+        this.titulo = titulo.trim();
+        this.descricao = descricao.trim();
+        this.tipo = tipo.trim();
         this.dataGeracao = LocalDateTime.now();
+    }
+
+    private void validarTexto(String valor, String mensagem) {
+        if (valor == null || valor.trim().isEmpty()) {
+            throw new IllegalArgumentException(mensagem);
+        }
     }
 
     public int getId() {
@@ -41,14 +56,20 @@ public class Relatorio {
     }
 
     public void setTitulo(String titulo) {
-        this.titulo = titulo;
+        validarTexto(titulo, "O título do relatório não pode ficar vazio!");
+        this.titulo = titulo.trim();
     }
 
     public void setDescricao(String descricao) {
-        this.descricao = descricao;
+        validarTexto(
+            descricao,
+            "A descrição do relatório não pode ficar vazia!"
+        );
+        this.descricao = descricao.trim();
     }
 
     public void setTipo(String tipo) {
-        this.tipo = tipo;
+        validarTexto(tipo, "O tipo do relatório não pode ficar vazio!");
+        this.tipo = tipo.trim();
     }
 }
