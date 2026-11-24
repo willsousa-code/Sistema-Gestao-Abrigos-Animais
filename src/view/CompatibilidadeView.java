@@ -1,6 +1,7 @@
+
 package view;
 
-import java.util.Scanner;
+import javax.swing.JOptionPane;
 
 import model.Animal;
 import model.Usuario;
@@ -12,15 +13,14 @@ import service.CompatibilidadeService;
 
 public class CompatibilidadeView {
 
-    private Scanner entrada = new Scanner(System.in);
-
     private AnimalService animalService;
     private UsuarioService usuarioService;
     private CompatibilidadeService compatibilidadeService;
 
-    public CompatibilidadeView(AnimalService animalService,
-                               UsuarioService usuarioService,
-                               CompatibilidadeService compatibilidadeService) {
+    public CompatibilidadeView(
+            AnimalService animalService,
+            UsuarioService usuarioService,
+            CompatibilidadeService compatibilidadeService) {
 
         this.animalService = animalService;
         this.usuarioService = usuarioService;
@@ -30,13 +30,28 @@ public class CompatibilidadeView {
     public void consultar() {
 
         try {
-            System.out.println("\n===== COMPATIBILIDADE PARA ADOÇÃO =====");
 
-            System.out.print("ID do animal: ");
-            int idAnimal = Integer.parseInt(entrada.nextLine());
+            String entradaAnimal = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do animal:",
+                "Consultar compatibilidade",
+                JOptionPane.QUESTION_MESSAGE
+            );
 
-            System.out.print("ID do interessado: ");
-            int idUsuario = Integer.parseInt(entrada.nextLine());
+            if (entradaAnimal == null) return;
+
+            int idAnimal = Integer.parseInt(entradaAnimal);
+
+            String entradaUsuario = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do interessado:",
+                "Consultar compatibilidade",
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (entradaUsuario == null) return;
+
+            int idUsuario = Integer.parseInt(entradaUsuario);
 
             Animal animal = animalService.buscar(idAnimal);
             Usuario usuario = usuarioService.buscar(idUsuario);
@@ -44,18 +59,53 @@ public class CompatibilidadeView {
             Compatibilidade resultado =
                 compatibilidadeService.calcular(animal, usuario);
 
-            System.out.println("\n===== RESULTADO =====");
+            StringBuilder texto = new StringBuilder();
 
-            System.out.println("Animal: " + animal.getNome());
-            System.out.println("Interessado: " + usuario.getNome());
+            texto.append("===== RESULTADO DA COMPATIBILIDADE =====\n\n");
 
-            System.out.println("Pontuação: " + resultado.getPontuacao());
-            System.out.println("Classificação: " + resultado.getClassificacao());
+            texto.append("Animal: ")
+                .append(animal.getNome())
+                .append("\n");
 
-            System.out.println("Justificativa: " + resultado.getJustificativa());
+            texto.append("Interessado: ")
+                .append(usuario.getNome())
+                .append("\n\n");
+
+            texto.append("Pontuação: ")
+                .append(resultado.getPontuacao())
+                .append("\n\n");
+
+            texto.append("Classificação: ")
+                .append(resultado.getClassificacao())
+                .append("\n\n");
+
+            texto.append("Justificativa:\n")
+                .append(resultado.getJustificativa());
+
+            JOptionPane.showMessageDialog(
+                null,
+                texto.toString(),
+                "Resultado da compatibilidade",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Digite IDs numéricos válidos!",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro na consulta",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 }
