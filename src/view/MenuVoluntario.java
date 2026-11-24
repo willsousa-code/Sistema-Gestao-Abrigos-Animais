@@ -1,7 +1,9 @@
 
 package view;
 
-import java.util.Scanner;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import main.SistemaContexto;
 import model.Animal;
@@ -10,7 +12,6 @@ import model.Voluntario;
 
 public class MenuVoluntario {
 
-    private Scanner entrada = new Scanner(System.in);
     private SistemaContexto contexto;
 
     private EventoView eventoView;
@@ -44,78 +45,118 @@ public class MenuVoluntario {
         try {
             voluntario = obterVoluntario();
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Acesso negado",
+                JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
-        int opcao = -1;
+        boolean continuar = true;
 
-        while (opcao != 0) {
+        while (continuar) {
 
-            System.out.println("\n===== MENU VOLUNTÁRIO =====");
-            System.out.println("1 - Ver animais disponíveis");
-            System.out.println("2 - Consultar eventos");
-            System.out.println("3 - Ver atividades");
-            System.out.println("4 - Participar de atividade");
-            System.out.println("5 - Consultar compatibilidade");
-            System.out.println("6 - Solicitar adoção");
-            System.out.println("7 - Consultar notificações");
-            System.out.println("0 - Voltar");
-            System.out.print("Escolha: ");
+            String[] opcoes = {
+                "Ver animais disponíveis",
+                "Consultar eventos",
+                "Ver atividades",
+                "Participar de atividade",
+                "Consultar compatibilidade",
+                "Solicitar adoção",
+                "Consultar notificações",
+                "Voltar"
+            };
+
+            int opcao = JOptionPane.showOptionDialog(
+                null,
+                "===== MENU VOLUNTÁRIO =====\n\n"
+                    + "Bem-vindo(a), " + voluntario.getNome() + "!",
+                "Sistema de Abrigos e Resgates",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                opcoes,
+                opcoes[0]
+            );
 
             try {
-                opcao = Integer.parseInt(entrada.nextLine());
 
                 switch (opcao) {
 
-                    case 1:
+                    case 0:
                         listarAnimaisDisponiveis();
                         break;
 
-                    case 2:
+                    case 1:
                         eventoView.listar();
                         break;
 
-                    case 3:
+                    case 2:
                         atividadeView.listar();
                         break;
 
-                    case 4:
+                    case 3:
                         atividadeView.inscrever();
                         break;
 
-                    case 5:
+                    case 4:
                         compatibilidadeView.consultar();
                         break;
 
-                    case 6:
+                    case 5:
                         adocaoView.solicitar();
                         break;
 
-                    case 7:
+                    case 6:
                         consultarNotificacoes(voluntario);
                         break;
 
-                    case 0:
-                        System.out.println("Voltando ao menu principal...");
+                    case 7:
+                    case JOptionPane.CLOSED_OPTION:
+                        continuar = false;
                         break;
 
                     default:
-                        System.out.println("Opção inválida!");
+                        break;
                 }
 
-            } catch (NumberFormatException e) {
-                System.out.println("Digite um número válido!");
             } catch (RuntimeException e) {
-                System.out.println("Erro: " + e.getMessage());
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Erro: " + e.getMessage(),
+                    "Erro na operação",
+                    JOptionPane.ERROR_MESSAGE
+                );
             }
         }
     }
 
     private Voluntario obterVoluntario() {
 
-        System.out.print("Digite o ID do voluntário: ");
-        int id = Integer.parseInt(entrada.nextLine());
+        String entrada = JOptionPane.showInputDialog(
+            null,
+            "Digite o ID do voluntário:",
+            "Identificação do voluntário",
+            JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (entrada == null) {
+            throw new IllegalArgumentException(
+                "Acesso cancelado pelo usuário."
+            );
+        }
+
+        int id;
+
+        try {
+            id = Integer.parseInt(entrada);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                "Digite um ID numérico válido!"
+            );
+        }
 
         Usuario usuario = contexto.usuarioService.buscar(id);
 
@@ -136,7 +177,9 @@ public class MenuVoluntario {
 
     private void listarAnimaisDisponiveis() {
 
-        System.out.println("\n===== ANIMAIS DISPONÍVEIS =====");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("===== ANIMAIS DISPONÍVEIS =====\n\n");
 
         boolean encontrou = false;
 
@@ -144,34 +187,90 @@ public class MenuVoluntario {
 
             if (animal.estaDisponivelParaAdocao()) {
 
-                System.out.println("ID: " + animal.getId());
-                System.out.println("Nome: " + animal.getNome());
-                System.out.println("Espécie: " + animal.getEspecie());
-                System.out.println("Raça: " + animal.getRaca());
-                System.out.println("Estado de saúde: " + animal.getEstadoSaude());
-                System.out.println("-----------------------------");
+                texto.append("ID: ")
+                    .append(animal.getId())
+                    .append("\n");
+
+                texto.append("Nome: ")
+                    .append(animal.getNome())
+                    .append("\n");
+
+                texto.append("Espécie: ")
+                    .append(animal.getEspecie())
+                    .append("\n");
+
+                texto.append("Raça: ")
+                    .append(animal.getRaca())
+                    .append("\n");
+
+                texto.append("Estado de saúde: ")
+                    .append(animal.getEstadoSaude())
+                    .append("\n");
+
+                texto.append("-----------------------------\n");
 
                 encontrou = true;
             }
         }
 
         if (!encontrou) {
-            System.out.println("Não existem animais disponíveis no momento.");
+            texto.append(
+                "Não existem animais disponíveis no momento."
+            );
         }
+
+        JTextArea area = new JTextArea(texto.toString(), 18, 40);
+        area.setEditable(false);
+
+        JOptionPane.showMessageDialog(
+            null,
+            new JScrollPane(area),
+            "Animais disponíveis",
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private void consultarNotificacoes(Voluntario voluntario) {
 
-        System.out.println("\n===== NOTIFICAÇÕES =====");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("===== NOTIFICAÇÕES =====\n\n");
 
         contexto.notificacaoService
             .listarPorDestinatario(voluntario)
             .forEach(notificacao -> {
-                System.out.println("ID: " + notificacao.getId());
-                System.out.println("Mensagem: " + notificacao.getMensagem());
-                System.out.println("Data: " + notificacao.getDataEnvio());
-                System.out.println("Lida: " + (notificacao.isLida() ? "Sim" : "Não"));
-                System.out.println("-----------------------------");
+
+                texto.append("ID: ")
+                    .append(notificacao.getId())
+                    .append("\n");
+
+                texto.append("Mensagem: ")
+                    .append(notificacao.getMensagem())
+                    .append("\n");
+
+                texto.append("Data: ")
+                    .append(notificacao.getDataEnvio())
+                    .append("\n");
+
+                texto.append("Lida: ")
+                    .append(notificacao.isLida() ? "Sim" : "Não")
+                    .append("\n");
+
+                texto.append("-----------------------------\n");
             });
+
+        if (texto.toString().equals("===== NOTIFICAÇÕES =====\n\n")) {
+            texto.append("Você não possui notificações.");
+        }
+
+        JTextArea area = new JTextArea(texto.toString(), 18, 40);
+        area.setEditable(false);
+
+        JOptionPane.showMessageDialog(
+            null,
+            new JScrollPane(area),
+            "Minhas notificações",
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 }
