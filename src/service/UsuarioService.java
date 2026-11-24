@@ -9,9 +9,15 @@ import repository.UsuarioRepository;
 
 public class UsuarioService {
 
-    private UsuarioRepository repositorio;
+    private final UsuarioRepository repositorio;
 
     public UsuarioService(UsuarioRepository repositorio) {
+        if (repositorio == null) {
+            throw new IllegalArgumentException(
+                "O repositório de usuários não pode ser nulo!"
+            );
+        }
+
         this.repositorio = repositorio;
     }
 
@@ -21,17 +27,25 @@ public class UsuarioService {
             throw new IllegalArgumentException("Usuário inválido!");
         }
 
+        if (usuario.getNome() == null ||
+                usuario.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome inválido!");
+        }
+
         if (usuario.getEmail() == null ||
-            usuario.getEmail().trim().isEmpty()) {
+                usuario.getEmail().trim().isEmpty()) {
             throw new IllegalArgumentException("E-mail inválido!");
         }
 
-        if (repositorio.buscarPorEmail(usuario.getEmail()) != null) {
+        String email = usuario.getEmail().trim();
+
+        if (repositorio.buscarPorEmail(email) != null) {
             throw new IllegalArgumentException(
                 "Já existe um usuário cadastrado com esse e-mail!"
             );
         }
 
+        usuario.setEmail(email);
         repositorio.cadastrar(usuario);
     }
 
@@ -40,6 +54,10 @@ public class UsuarioService {
     }
 
     public Usuario buscar(int id) {
+
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID inválido!");
+        }
 
         Usuario usuario = repositorio.buscar(id);
 
@@ -67,13 +85,14 @@ public class UsuarioService {
 
     public Usuario autenticar(String email, String senha) {
 
-        if (email == null || senha == null) {
+        if (email == null || email.trim().isEmpty() ||
+                senha == null || senha.isEmpty()) {
             throw new IllegalArgumentException(
                 "E-mail e senha são obrigatórios!"
             );
         }
 
-        Usuario usuario = repositorio.buscarPorEmail(email);
+        Usuario usuario = repositorio.buscarPorEmail(email.trim());
 
         if (usuario == null) {
             throw new IllegalArgumentException(
