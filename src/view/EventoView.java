@@ -1,14 +1,19 @@
+
 package view;
 
-import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import model.Evento;
 import service.EventoService;
 
 public class EventoView {
 
-    private Scanner entrada = new Scanner(System.in);
     private EventoService eventoService;
 
     public EventoView(EventoService eventoService) {
@@ -18,34 +23,80 @@ public class EventoView {
     public void cadastrar() {
 
         try {
-            System.out.println("\n===== CADASTRAR EVENTO =====");
 
-            System.out.print("Nome: ");
-            String nome = entrada.nextLine();
+            String nome = JOptionPane.showInputDialog(
+                null,
+                "Nome do evento:",
+                "Cadastrar evento",
+                JOptionPane.QUESTION_MESSAGE
+            );
 
-            System.out.print("Descrição: ");
-            String descricao = entrada.nextLine();
+            if (nome == null) return;
 
-            System.out.print("Data (AAAA-MM-DD): ");
-            java.time.LocalDate data =
-                java.time.LocalDate.parse(entrada.nextLine());
+            String descricao = JOptionPane.showInputDialog(
+                null,
+                "Descrição do evento:"
+            );
 
-            System.out.print("Local: ");
-            String local = entrada.nextLine();
+            if (descricao == null) return;
 
-            System.out.print("Tipo do evento: ");
-            String tipo = entrada.nextLine();
+            String entradaData = JOptionPane.showInputDialog(
+                null,
+                "Data do evento (AAAA-MM-DD):"
+            );
+
+            if (entradaData == null) return;
+
+            LocalDate data = LocalDate.parse(entradaData);
+
+            String local = JOptionPane.showInputDialog(
+                null,
+                "Local do evento:"
+            );
+
+            if (local == null) return;
+
+            String tipo = JOptionPane.showInputDialog(
+                null,
+                "Tipo do evento:"
+            );
+
+            if (tipo == null) return;
 
             Evento evento = new Evento(
-                nome, descricao, data, local, tipo
+                nome,
+                descricao,
+                data,
+                local,
+                tipo
             );
 
             eventoService.cadastrar(evento);
 
-            System.out.println("Evento cadastrado!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Evento cadastrado com sucesso!",
+                "Cadastro concluído",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (DateTimeParseException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Data inválida! Utilize o formato AAAA-MM-DD.",
+                "Erro de data",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro no cadastro",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -53,39 +104,114 @@ public class EventoView {
 
         List<Evento> eventos = eventoService.listar();
 
-        System.out.println("\n===== EVENTOS CADASTRADOS =====");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("===== EVENTOS CADASTRADOS =====\n\n");
 
         if (eventos.isEmpty()) {
-            System.out.println("Nenhum evento cadastrado.");
-            return;
+
+            texto.append("Nenhum evento cadastrado.");
+
+        } else {
+
+            for (Evento evento : eventos) {
+
+                texto.append("ID: ")
+                    .append(evento.getId())
+                    .append("\n");
+
+                texto.append("Nome: ")
+                    .append(evento.getNome())
+                    .append("\n");
+
+                texto.append("Descrição: ")
+                    .append(evento.getDescricao())
+                    .append("\n");
+
+                texto.append("Data: ")
+                    .append(evento.getData())
+                    .append("\n");
+
+                texto.append("Local: ")
+                    .append(evento.getLocal())
+                    .append("\n");
+
+                texto.append("Tipo: ")
+                    .append(evento.getTipo())
+                    .append("\n");
+
+                texto.append("Ativo: ")
+                    .append(evento.isAtivo() ? "Sim" : "Não")
+                    .append("\n");
+
+                texto.append("------------------------------\n");
+            }
         }
 
-        for (Evento e : eventos) {
+        JTextArea area = new JTextArea(texto.toString(), 18, 45);
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
 
-            System.out.println("ID: " + e.getId());
-            System.out.println("Nome: " + e.getNome());
-            System.out.println("Descrição: " + e.getDescricao());
-            System.out.println("Data: " + e.getData());
-            System.out.println("Local: " + e.getLocal());
-            System.out.println("Tipo: " + e.getTipo());
-            System.out.println("Ativo: " + e.isAtivo());
-
-            System.out.println("-------------------------");
-        }
+        JOptionPane.showMessageDialog(
+            null,
+            new JScrollPane(area),
+            "Eventos cadastrados",
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     public void desativar() {
 
         try {
-            System.out.print("ID do evento: ");
-            int id = Integer.parseInt(entrada.nextLine());
+
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do evento que deseja desativar:",
+                "Desativar evento",
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
+
+            int confirmacao = JOptionPane.showConfirmDialog(
+                null,
+                "Deseja realmente desativar este evento?",
+                "Confirmar desativação",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirmacao != JOptionPane.YES_OPTION) return;
 
             eventoService.desativar(id);
 
-            System.out.println("Evento desativado!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Evento desativado com sucesso!",
+                "Operação concluída",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Digite um ID numérico válido!",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro ao desativar evento",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 }
