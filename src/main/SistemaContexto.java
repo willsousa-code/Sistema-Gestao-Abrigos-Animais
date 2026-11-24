@@ -3,10 +3,11 @@ package main;
 
 import repository.*;
 import service.*;
+import model.Administrador;
+import model.Usuario;
 
 public class SistemaContexto {
 
-    
     public final AnimalRepository animais = new AnimalRepository();
     public final UsuarioRepository usuarios = new UsuarioRepository();
     public final AdocaoRepository adocoes = new AdocaoRepository();
@@ -17,7 +18,6 @@ public class SistemaContexto {
     public final NotificacaoRepository notificacoes = new NotificacaoRepository();
     public final RelatorioRepository relatorios = new RelatorioRepository();
 
-    
     public final AnimalService animalService =
         new AnimalService(animais);
 
@@ -33,7 +33,6 @@ public class SistemaContexto {
     public final VacinaService vacinaService =
         new VacinaService(vacinas);
 
-
     public final EventoService eventoService =
         new EventoService(eventos);
 
@@ -48,5 +47,34 @@ public class SistemaContexto {
 
     public final CompatibilidadeService compatibilidadeService =
         new CompatibilidadeService();
-}
 
+    public SistemaContexto() {
+        criarAdministradorInicial();
+    }
+
+    private void criarAdministradorInicial() {
+
+        boolean existeAdministrador = false;
+
+        for (Usuario usuario : usuarioService.listar()) {
+
+            if (usuario instanceof Administrador) {
+                existeAdministrador = true;
+                break;
+            }
+        }
+
+        if (!existeAdministrador) {
+
+            Administrador administrador = new Administrador(
+                "Administrador do Sistema",
+                "admin@abrigo.com",
+                "Admin@123",
+                "88999999999",
+                "Total"
+            );
+
+            usuarioService.cadastrar(administrador);
+        }
+    }
+}
