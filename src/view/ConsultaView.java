@@ -1,7 +1,11 @@
+
 package view;
 
-import java.util.Scanner;
 import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import model.Consulta;
 import model.Animal;
@@ -12,13 +16,12 @@ import service.AnimalService;
 
 public class ConsultaView {
 
-    private Scanner entrada = new Scanner(System.in);
-
     private ConsultaService consultaService;
     private AnimalService animalService;
 
-    public ConsultaView(ConsultaService consultaService,
-                        AnimalService animalService) {
+    public ConsultaView(
+            ConsultaService consultaService,
+            AnimalService animalService) {
 
         this.consultaService = consultaService;
         this.animalService = animalService;
@@ -27,21 +30,40 @@ public class ConsultaView {
     public void cadastrar(Veterinario veterinario) {
 
         try {
-            System.out.println("\n===== REGISTRAR CONSULTA =====");
 
-            System.out.print("ID do animal: ");
-            int id = Integer.parseInt(entrada.nextLine());
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do animal:",
+                "Registrar consulta",
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
 
             Animal animal = animalService.buscar(id);
 
-            System.out.print("Diagnóstico: ");
-            String diagnostico = entrada.nextLine();
+            String diagnostico = JOptionPane.showInputDialog(
+                null,
+                "Informe o diagnóstico:"
+            );
 
-            System.out.print("Observações: ");
-            String observacoes = entrada.nextLine();
+            if (diagnostico == null) return;
 
-            System.out.print("Tratamento indicado: ");
-            String tratamento = entrada.nextLine();
+            String observacoes = JOptionPane.showInputDialog(
+                null,
+                "Informe as observações:"
+            );
+
+            if (observacoes == null) return;
+
+            String tratamento = JOptionPane.showInputDialog(
+                null,
+                "Informe o tratamento indicado:"
+            );
+
+            if (tratamento == null) return;
 
             Consulta consulta = new Consulta(
                 animal,
@@ -51,12 +73,35 @@ public class ConsultaView {
                 tratamento
             );
 
-            consultaService.cadastrarConsulta(consulta, veterinario);
+            consultaService.cadastrarConsulta(
+                consulta,
+                veterinario
+            );
 
-            System.out.println("Consulta registrada com sucesso!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Consulta registrada com sucesso!",
+                "Consulta concluída",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Digite um ID numérico válido!",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro ao registrar consulta",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -64,44 +109,148 @@ public class ConsultaView {
 
         List<Consulta> consultas = consultaService.listar();
 
-        System.out.println("\n===== CONSULTAS REGISTRADAS =====");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("===== CONSULTAS REGISTRADAS =====\n\n");
 
         if (consultas.isEmpty()) {
-            System.out.println("Nenhuma consulta cadastrada.");
-            return;
+
+            texto.append("Nenhuma consulta cadastrada.");
+
+        } else {
+
+            for (Consulta consulta : consultas) {
+
+                texto.append("Código: ")
+                    .append(consulta.getId())
+                    .append("\n");
+
+                texto.append("Animal: ")
+                    .append(consulta.getAnimal().getNome())
+                    .append("\n");
+
+                texto.append("Veterinário: ")
+                    .append(consulta.getVeterinario().getNome())
+                    .append("\n");
+
+                texto.append("Data: ")
+                    .append(consulta.getDataConsulta())
+                    .append("\n");
+
+                texto.append("Diagnóstico: ")
+                    .append(consulta.getDiagnostico())
+                    .append("\n");
+
+                texto.append("Observações: ")
+                    .append(consulta.getObservacoes())
+                    .append("\n");
+
+                texto.append("Tratamento: ")
+                    .append(consulta.getTratamentoIndicado())
+                    .append("\n");
+
+                texto.append("------------------------------\n");
+            }
         }
 
-        for (Consulta c : consultas) {
-
-            System.out.println("Código: " + c.getId());
-            System.out.println("Animal: " + c.getAnimal().getNome());
-            System.out.println("Veterinário: " + c.getVeterinario().getNome());
-            System.out.println("Data: " + c.getDataConsulta());
-            System.out.println("Diagnóstico: " + c.getDiagnostico());
-            System.out.println("Observações: " + c.getObservacoes());
-            System.out.println("Tratamento: " + c.getTratamentoIndicado());
-
-            System.out.println("-------------------------");
-        }
+        mostrarTexto(
+            texto.toString(),
+            "Consultas registradas"
+        );
     }
 
     public void buscarPorAnimal() {
 
-        System.out.print("Digite o ID do animal: ");
-        int id = Integer.parseInt(entrada.nextLine());
+        try {
 
-        List<Consulta> consultas = consultaService.buscarPorAnimal(id);
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do animal:",
+                "Histórico médico",
+                JOptionPane.QUESTION_MESSAGE
+            );
 
-        if (consultas.isEmpty()) {
-            System.out.println("Nenhuma consulta encontrada.");
-            return;
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
+
+            List<Consulta> consultas =
+                consultaService.buscarPorAnimal(id);
+
+            StringBuilder texto = new StringBuilder();
+
+            texto.append("===== HISTÓRICO DE CONSULTAS =====\n\n");
+
+            if (consultas.isEmpty()) {
+
+                texto.append("Nenhuma consulta encontrada para este animal.");
+
+            } else {
+
+                for (Consulta consulta : consultas) {
+
+                    texto.append("Animal: ")
+                        .append(consulta.getAnimal().getNome())
+                        .append("\n");
+
+                    texto.append("Veterinário: ")
+                        .append(consulta.getVeterinario().getNome())
+                        .append("\n");
+
+                    texto.append("Data: ")
+                        .append(consulta.getDataConsulta())
+                        .append("\n");
+
+                    texto.append("Diagnóstico: ")
+                        .append(consulta.getDiagnostico())
+                        .append("\n");
+
+                    texto.append("Tratamento: ")
+                        .append(consulta.getTratamentoIndicado())
+                        .append("\n");
+
+                    texto.append("------------------------------\n");
+                }
+            }
+
+            mostrarTexto(
+                texto.toString(),
+                "Histórico médico do animal"
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Digite um ID numérico válido!",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+        } catch (RuntimeException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro na consulta",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
+    }
 
-        for (Consulta c : consultas) {
-            System.out.println("Data: " + c.getDataConsulta());
-            System.out.println("Diagnóstico: " + c.getDiagnostico());
-            System.out.println("Tratamento: " + c.getTratamentoIndicado());
-            System.out.println("-------------------------");
-        }
+    private void mostrarTexto(String conteudo, String titulo) {
+
+        JTextArea area = new JTextArea(conteudo, 18, 45);
+
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+
+        JOptionPane.showMessageDialog(
+            null,
+            new JScrollPane(area),
+            titulo,
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 }
