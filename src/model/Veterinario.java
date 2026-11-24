@@ -1,3 +1,4 @@
+
 package model;
 
 import java.util.ArrayList;
@@ -9,12 +10,14 @@ public class Veterinario extends Usuario {
     private String especialidade;
     private List<String> historicoAtendimentos;
 
-    public Veterinario(String nome, String email, String senha, String telefone,
-                       String crmv, String especialidade) {
+    public Veterinario(String nome, String email, String senha,
+                       String telefone, String crmv, String especialidade) {
 
         super(nome, email, senha, telefone);
-        this.crmv = crmv;
-        this.especialidade = especialidade;
+
+        setCrmv(crmv);
+        setEspecialidade(especialidade);
+
         this.historicoAtendimentos = new ArrayList<>();
     }
 
@@ -27,23 +30,55 @@ public class Veterinario extends Usuario {
     }
 
     public List<String> getHistoricoAtendimentos() {
-        return historicoAtendimentos;
+        return new ArrayList<>(historicoAtendimentos);
     }
 
     public void setCrmv(String crmv) {
-        this.crmv = crmv;
+        if (crmv == null || crmv.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "O CRMV não pode ficar vazio!"
+            );
+        }
+
+        this.crmv = crmv.trim();
     }
 
     public void setEspecialidade(String especialidade) {
-        this.especialidade = especialidade;
+        if (especialidade == null || especialidade.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "A especialidade não pode ficar vazia!"
+            );
+        }
+
+        this.especialidade = especialidade.trim();
     }
 
     public void setHistoricoAtendimentos(List<String> historicoAtendimentos) {
-        this.historicoAtendimentos = historicoAtendimentos;
+        if (historicoAtendimentos == null) {
+            throw new IllegalArgumentException(
+                "O histórico de atendimentos não pode ser nulo!"
+            );
+        }
+
+        for (String atendimento : historicoAtendimentos) {
+            if (atendimento == null || atendimento.trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                    "O histórico contém um atendimento inválido!"
+                );
+            }
+        }
+
+        this.historicoAtendimentos = new ArrayList<>(historicoAtendimentos);
     }
 
     public void adicionarAtendimento(String atendimento) {
-        historicoAtendimentos.add(atendimento);
+        if (atendimento == null || atendimento.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "O atendimento não pode ficar vazio!"
+            );
+        }
+
+        historicoAtendimentos.add(atendimento.trim());
     }
 
     @Override
