@@ -1,15 +1,19 @@
+
 package view;
 
-import java.util.Scanner;
-import java.util.List;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import model.Atividade;
 import service.AtividadeService;
 
 public class AtividadeView {
 
-    private Scanner entrada = new Scanner(System.in);
     private AtividadeService atividadeService;
 
     public AtividadeView(AtividadeService atividadeService) {
@@ -19,36 +23,99 @@ public class AtividadeView {
     public void cadastrar() {
 
         try {
-            System.out.println("\n===== CADASTRAR ATIVIDADE =====");
 
-            System.out.print("Nome: ");
-            String nome = entrada.nextLine();
+            String nome = JOptionPane.showInputDialog(
+                null,
+                "Nome da atividade:",
+                "Cadastrar atividade",
+                JOptionPane.QUESTION_MESSAGE
+            );
 
-            System.out.print("Descrição: ");
-            String descricao = entrada.nextLine();
+            if (nome == null) return;
 
-            System.out.print("Data (AAAA-MM-DD): ");
-            LocalDate data = LocalDate.parse(entrada.nextLine());
+            String descricao = JOptionPane.showInputDialog(
+                null,
+                "Descrição da atividade:"
+            );
 
-            System.out.print("Horário: ");
-            String horario = entrada.nextLine();
+            if (descricao == null) return;
 
-            System.out.print("Local: ");
-            String local = entrada.nextLine();
+            String entradaData = JOptionPane.showInputDialog(
+                null,
+                "Data (AAAA-MM-DD):"
+            );
 
-            System.out.print("Quantidade de vagas: ");
-            int vagas = Integer.parseInt(entrada.nextLine());
+            if (entradaData == null) return;
+
+            LocalDate data = LocalDate.parse(entradaData);
+
+            String horario = JOptionPane.showInputDialog(
+                null,
+                "Horário:"
+            );
+
+            if (horario == null) return;
+
+            String local = JOptionPane.showInputDialog(
+                null,
+                "Local:"
+            );
+
+            if (local == null) return;
+
+            String entradaVagas = JOptionPane.showInputDialog(
+                null,
+                "Quantidade de vagas:"
+            );
+
+            if (entradaVagas == null) return;
+
+            int vagas = Integer.parseInt(entradaVagas);
 
             Atividade atividade = new Atividade(
-                nome, descricao, data, horario, local, vagas
+                nome,
+                descricao,
+                data,
+                horario,
+                local,
+                vagas
             );
 
             atividadeService.cadastrar(atividade);
 
-            System.out.println("Atividade cadastrada com sucesso!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Atividade cadastrada com sucesso!",
+                "Cadastro concluído",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Quantidade de vagas inválida! Digite um número inteiro.",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+        } catch (DateTimeParseException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Data inválida! Utilize o formato AAAA-MM-DD.",
+                "Erro de data",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro no cadastro",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -56,55 +123,168 @@ public class AtividadeView {
 
         List<Atividade> atividades = atividadeService.listar();
 
-        System.out.println("\n===== ATIVIDADES =====");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("===== ATIVIDADES CADASTRADAS =====\n\n");
 
         if (atividades.isEmpty()) {
-            System.out.println("Nenhuma atividade cadastrada.");
-            return;
+
+            texto.append("Nenhuma atividade cadastrada.");
+
+        } else {
+
+            for (Atividade atividade : atividades) {
+
+                texto.append("ID: ")
+                    .append(atividade.getId())
+                    .append("\n");
+
+                texto.append("Nome: ")
+                    .append(atividade.getNome())
+                    .append("\n");
+
+                texto.append("Descrição: ")
+                    .append(atividade.getDescricao())
+                    .append("\n");
+
+                texto.append("Data: ")
+                    .append(atividade.getData())
+                    .append("\n");
+
+                texto.append("Horário: ")
+                    .append(atividade.getHorario())
+                    .append("\n");
+
+                texto.append("Local: ")
+                    .append(atividade.getLocal())
+                    .append("\n");
+
+                texto.append("Vagas: ")
+                    .append(atividade.getVagas())
+                    .append("\n");
+
+                texto.append("Participantes: ")
+                    .append(atividade.getVagasOcupadas())
+                    .append("\n");
+
+                texto.append("Vagas restantes: ")
+                    .append(
+                        atividade.getVagas() - atividade.getVagasOcupadas()
+                    )
+                    .append("\n");
+
+                texto.append("------------------------------\n");
+            }
         }
 
-        for (Atividade a : atividades) {
+        JTextArea area = new JTextArea(texto.toString(), 18, 45);
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
 
-            System.out.println("ID: " + a.getId());
-            System.out.println("Nome: " + a.getNome());
-            System.out.println("Descrição: " + a.getDescricao());
-            System.out.println("Data: " + a.getData());
-            System.out.println("Horário: " + a.getHorario());
-            System.out.println("Local: " + a.getLocal());
-            System.out.println("Vagas: " + a.getVagas());
-            System.out.println("Participantes: " + a.getVagasOcupadas());
-
-            System.out.println("-------------------------");
-        }
+        JOptionPane.showMessageDialog(
+            null,
+            new JScrollPane(area),
+            "Atividades cadastradas",
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     public void inscrever() {
 
         try {
-            System.out.print("ID da atividade: ");
-            int id = Integer.parseInt(entrada.nextLine());
+
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID da atividade:",
+                "Inscrever participante",
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
 
             atividadeService.inscreverParticipante(id);
 
-            System.out.println("Inscrição realizada com sucesso!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Inscrição realizada com sucesso!",
+                "Inscrição concluída",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Digite um ID numérico válido!",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro na inscrição",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     public void cancelarInscricao() {
 
         try {
-            System.out.print("ID da atividade: ");
-            int id = Integer.parseInt(entrada.nextLine());
+
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID da atividade:",
+                "Cancelar inscrição",
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
+
+            int confirmacao = JOptionPane.showConfirmDialog(
+                null,
+                "Deseja realmente cancelar a inscrição?",
+                "Confirmar cancelamento",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirmacao != JOptionPane.YES_OPTION) return;
 
             atividadeService.cancelarInscricao(id);
 
-            System.out.println("Inscrição cancelada!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Inscrição cancelada com sucesso!",
+                "Operação concluída",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Digite um ID numérico válido!",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro no cancelamento",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 }
