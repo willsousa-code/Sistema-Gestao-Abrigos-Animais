@@ -9,7 +9,7 @@ import model.Usuario;
 
 public class UsuarioRepository {
 
-    private List<Usuario> usuarios = new ArrayList<>();
+    private final List<Usuario> usuarios = new ArrayList<>();
 
     public void cadastrar(Usuario usuario) {
 
@@ -18,20 +18,40 @@ public class UsuarioRepository {
         }
 
         if (buscar(usuario.getId()) != null) {
-            throw new IllegalArgumentException("Usuário já cadastrado!");
+            throw new IllegalArgumentException(
+                "Usuário já cadastrado!"
+            );
+        }
+
+        if (usuario.getEmail() == null ||
+                usuario.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                "E-mail inválido!"
+            );
+        }
+
+        if (buscarPorEmail(usuario.getEmail()) != null) {
+            throw new IllegalArgumentException(
+                "Já existe um usuário cadastrado com esse e-mail!"
+            );
         }
 
         usuarios.add(usuario);
     }
 
     public List<Usuario> listar() {
-        return Collections.unmodifiableList(new ArrayList<>(usuarios));
+        return Collections.unmodifiableList(
+            new ArrayList<>(usuarios)
+        );
     }
 
     public Usuario buscar(int id) {
 
-        for (Usuario usuario : usuarios) {
+        if (id <= 0) {
+            return null;
+        }
 
+        for (Usuario usuario : usuarios) {
             if (usuario.getId() == id) {
                 return usuario;
             }
@@ -45,7 +65,9 @@ public class UsuarioRepository {
         Usuario usuario = buscar(id);
 
         if (usuario == null) {
-            throw new IllegalArgumentException("Usuário não encontrado!");
+            throw new IllegalArgumentException(
+                "Usuário não encontrado!"
+            );
         }
 
         usuarios.remove(usuario);
@@ -57,11 +79,12 @@ public class UsuarioRepository {
             return null;
         }
 
+        String emailPesquisa = email.trim();
+
         for (Usuario usuario : usuarios) {
 
             if (usuario.getEmail() != null &&
-                usuario.getEmail().equalsIgnoreCase(email.trim())) {
-
+                    usuario.getEmail().equalsIgnoreCase(emailPesquisa)) {
                 return usuario;
             }
         }
