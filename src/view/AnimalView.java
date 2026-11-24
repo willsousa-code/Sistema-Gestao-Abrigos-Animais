@@ -4,14 +4,16 @@ package view;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Scanner;
+
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import model.Animal;
 import service.AnimalService;
 
 public class AnimalView {
 
-    private Scanner entrada = new Scanner(System.in);
     private AnimalService animalService;
 
     public AnimalView(AnimalService animalService) {
@@ -20,55 +22,59 @@ public class AnimalView {
 
     public void exibir() {
 
-        int opcao = -1;
+        boolean continuar = true;
 
-        while (opcao != 0) {
+        while (continuar) {
 
-            System.out.println("\n===== GERENCIAMENTO DE ANIMAIS =====");
-            System.out.println("1 - Cadastrar animal");
-            System.out.println("2 - Listar animais");
-            System.out.println("3 - Buscar animal por ID");
-            System.out.println("4 - Excluir animal");
-            System.out.println("5 - Disponibilizar para adoção");
-            System.out.println("0 - Voltar");
+            String[] opcoes = {
+                "Cadastrar animal",
+                "Listar animais",
+                "Buscar animal por ID",
+                "Excluir animal",
+                "Disponibilizar para adoção",
+                "Voltar"
+            };
 
-            System.out.print("Escolha: ");
+            int opcao = JOptionPane.showOptionDialog(
+                null,
+                "===== GERENCIAMENTO DE ANIMAIS =====",
+                "Sistema de Abrigos e Resgates",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                opcoes,
+                opcoes[0]
+            );
 
-            try {
-                opcao = Integer.parseInt(entrada.nextLine());
+            switch (opcao) {
 
-                switch (opcao) {
+                case 0:
+                    cadastrar();
+                    break;
 
-                    case 1:
-                        cadastrar();
-                        break;
+                case 1:
+                    listar();
+                    break;
 
-                    case 2:
-                        listar();
-                        break;
+                case 2:
+                    buscar();
+                    break;
 
-                    case 3:
-                        buscar();
-                        break;
+                case 3:
+                    excluir();
+                    break;
 
-                    case 4:
-                        excluir();
-                        break;
+                case 4:
+                    disponibilizar();
+                    break;
 
-                    case 5:
-                        disponibilizar();
-                        break;
+                case 5:
+                case JOptionPane.CLOSED_OPTION:
+                    continuar = false;
+                    break;
 
-                    case 0:
-                        System.out.println("Voltando ao menu...");
-                        break;
-
-                    default:
-                        System.out.println("Opção inválida!");
-                }
-
-            } catch (NumberFormatException e) {
-                System.out.println("Digite um número válido!");
+                default:
+                    break;
             }
         }
     }
@@ -76,42 +82,99 @@ public class AnimalView {
     private void cadastrar() {
 
         try {
-            System.out.println("\n===== CADASTRAR ANIMAL =====");
 
-            System.out.print("Nome: ");
-            String nome = entrada.nextLine();
+            String nome = JOptionPane.showInputDialog(
+                null, "Nome do animal:"
+            );
 
-            System.out.print("Espécie: ");
-            String especie = entrada.nextLine();
+            if (nome == null) return;
 
-            System.out.print("Raça: ");
-            String raca = entrada.nextLine();
+            String especie = JOptionPane.showInputDialog(
+                null, "Espécie:"
+            );
 
-            System.out.print("Idade: ");
-            int idade = Integer.parseInt(entrada.nextLine());
+            if (especie == null) return;
 
-            System.out.print("Porte: ");
-            String porte = entrada.nextLine();
+            String raca = JOptionPane.showInputDialog(
+                null, "Raça:"
+            );
 
-            System.out.print("Estado de saúde: ");
-            String saude = entrada.nextLine();
+            if (raca == null) return;
 
-            System.out.print("Data do resgate (AAAA-MM-DD): ");
-            LocalDate data = LocalDate.parse(entrada.nextLine());
+            String entradaIdade = JOptionPane.showInputDialog(
+                null, "Idade:"
+            );
+
+            if (entradaIdade == null) return;
+
+            int idade = Integer.parseInt(entradaIdade);
+
+            String porte = JOptionPane.showInputDialog(
+                null, "Porte:"
+            );
+
+            if (porte == null) return;
+
+            String saude = JOptionPane.showInputDialog(
+                null, "Estado de saúde:"
+            );
+
+            if (saude == null) return;
+
+            String entradaData = JOptionPane.showInputDialog(
+                null,
+                "Data do resgate (AAAA-MM-DD):"
+            );
+
+            if (entradaData == null) return;
+
+            LocalDate data = LocalDate.parse(entradaData);
 
             Animal animal = new Animal(
-                nome, especie, raca, idade, porte, saude, data
+                nome,
+                especie,
+                raca,
+                idade,
+                porte,
+                saude,
+                data
             );
 
             animalService.cadastrar(animal);
 
-            System.out.println("Animal cadastrado com sucesso!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Animal cadastrado com sucesso!",
+                "Cadastro concluído",
+                JOptionPane.INFORMATION_MESSAGE
+            );
 
         } catch (NumberFormatException e) {
-            System.out.println("Idade inválida!");
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Idade inválida! Digite um número inteiro.",
+                "Erro de entrada",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (DateTimeParseException e) {
-            System.out.println("Data inválida! Utilize AAAA-MM-DD.");
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Data inválida! Utilize o formato AAAA-MM-DD.",
+                "Erro de data",
+                JOptionPane.WARNING_MESSAGE
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                e.getMessage(),
+                "Erro no cadastro",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -119,84 +182,193 @@ public class AnimalView {
 
         List<Animal> animais = animalService.listarAnimais();
 
-        System.out.println("\n===== ANIMAIS CADASTRADOS =====");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("===== ANIMAIS CADASTRADOS =====\n\n");
 
         if (animais.isEmpty()) {
-            System.out.println("Nenhum animal cadastrado.");
-            return;
+
+            texto.append("Nenhum animal cadastrado.");
+
+        } else {
+
+            for (Animal animal : animais) {
+                texto.append(formatarAnimal(animal));
+                texto.append("\n------------------------------\n");
+            }
         }
 
-        for (Animal animal : animais) {
-            mostrarAnimal(animal);
-        }
+        mostrarTexto(
+            texto.toString(),
+            "Animais cadastrados"
+        );
     }
 
     private void buscar() {
 
         try {
-            System.out.print("Digite o ID do animal: ");
-            int id = Integer.parseInt(entrada.nextLine());
+
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do animal:"
+            );
+
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
 
             Animal animal = animalService.buscar(id);
 
-            mostrarAnimal(animal);
+            mostrarTexto(
+                formatarAnimal(animal),
+                "Animal encontrado"
+            );
 
         } catch (NumberFormatException e) {
-            System.out.println("ID inválido!");
+
+            JOptionPane.showMessageDialog(
+                null,
+                "ID inválido! Digite um número.",
+                "Erro",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                e.getMessage(),
+                "Animal não encontrado",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     private void excluir() {
 
         try {
-            System.out.print("Digite o ID do animal: ");
-            int id = Integer.parseInt(entrada.nextLine());
+
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do animal que deseja excluir:"
+            );
+
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
+
+            int confirmacao = JOptionPane.showConfirmDialog(
+                null,
+                "Deseja realmente excluir este animal?",
+                "Confirmar exclusão",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirmacao != JOptionPane.YES_OPTION) {
+                return;
+            }
 
             animalService.excluir(id);
 
-            System.out.println("Animal excluído com sucesso!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Animal excluído com sucesso!",
+                "Operação concluída",
+                JOptionPane.INFORMATION_MESSAGE
+            );
 
         } catch (NumberFormatException e) {
-            System.out.println("ID inválido!");
+
+            JOptionPane.showMessageDialog(
+                null,
+                "ID inválido!",
+                "Erro",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                e.getMessage(),
+                "Erro na exclusão",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     private void disponibilizar() {
 
         try {
-            System.out.print("Digite o ID do animal: ");
-            int id = Integer.parseInt(entrada.nextLine());
+
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do animal:"
+            );
+
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
 
             animalService.disponibilizar(id);
 
-            System.out.println("Animal disponibilizado para adoção!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Animal disponibilizado para adoção!",
+                "Operação concluída",
+                JOptionPane.INFORMATION_MESSAGE
+            );
 
         } catch (NumberFormatException e) {
-            System.out.println("ID inválido!");
+
+            JOptionPane.showMessageDialog(
+                null,
+                "ID inválido!",
+                "Erro",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                e.getMessage(),
+                "Erro ao disponibilizar",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
-    private void mostrarAnimal(Animal animal) {
+    private String formatarAnimal(Animal animal) {
 
-        System.out.println("\n------------------------------");
-        System.out.println("ID: " + animal.getId());
-        System.out.println("Nome: " + animal.getNome());
-        System.out.println("Espécie: " + animal.getEspecie());
-        System.out.println("Raça: " + animal.getRaca());
-        System.out.println("Idade: " + animal.getIdade());
-        System.out.println("Porte: " + animal.getPorte());
-        System.out.println("Saúde: " + animal.getEstadoSaude());
-        System.out.println("Data do resgate: " + animal.getDataResgate());
-        System.out.println("Status: " + animal.getStatusAdocao());
-        System.out.println("------------------------------");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("ID: ").append(animal.getId()).append("\n");
+        texto.append("Nome: ").append(animal.getNome()).append("\n");
+        texto.append("Espécie: ").append(animal.getEspecie()).append("\n");
+        texto.append("Raça: ").append(animal.getRaca()).append("\n");
+        texto.append("Idade: ").append(animal.getIdade()).append("\n");
+        texto.append("Porte: ").append(animal.getPorte()).append("\n");
+        texto.append("Saúde: ").append(animal.getEstadoSaude()).append("\n");
+        texto.append("Data do resgate: ").append(animal.getDataResgate()).append("\n");
+        texto.append("Status: ").append(animal.getStatusAdocao()).append("\n");
+
+        return texto.toString();
+    }
+
+    private void mostrarTexto(String conteudo, String titulo) {
+
+        JTextArea area = new JTextArea(conteudo, 18, 40);
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+
+        JOptionPane.showMessageDialog(
+            null,
+            new JScrollPane(area),
+            titulo,
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 }
