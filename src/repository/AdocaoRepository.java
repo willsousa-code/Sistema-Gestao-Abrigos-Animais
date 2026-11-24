@@ -9,7 +9,7 @@ import model.Adocao;
 
 public class AdocaoRepository {
 
-    private List<Adocao> adocoes = new ArrayList<>();
+    private final List<Adocao> adocoes = new ArrayList<>();
 
     public void cadastrar(Adocao adocao) {
 
@@ -18,20 +18,27 @@ public class AdocaoRepository {
         }
 
         if (buscarPorId(adocao.getId()) != null) {
-            throw new IllegalArgumentException("Adoção já cadastrada!");
+            throw new IllegalArgumentException(
+                "Adoção já cadastrada!"
+            );
         }
 
         adocoes.add(adocao);
     }
 
     public List<Adocao> listar() {
-        return Collections.unmodifiableList(new ArrayList<>(adocoes));
+        return Collections.unmodifiableList(
+            new ArrayList<>(adocoes)
+        );
     }
 
     public Adocao buscarPorId(int id) {
 
-        for (Adocao adocao : adocoes) {
+        if (id <= 0) {
+            return null;
+        }
 
+        for (Adocao adocao : adocoes) {
             if (adocao.getId() == id) {
                 return adocao;
             }
@@ -43,7 +50,9 @@ public class AdocaoRepository {
     public void excluir(int id) {
 
         if (buscarPorId(id) == null) {
-            throw new IllegalArgumentException("Adoção não encontrada!");
+            throw new IllegalArgumentException(
+                "Adoção não encontrada!"
+            );
         }
 
         throw new UnsupportedOperationException(
@@ -62,12 +71,11 @@ public class AdocaoRepository {
         for (Adocao adocao : adocoes) {
 
             if (adocao.getStatus() != null &&
-                adocao.getStatus().equalsIgnoreCase(status.trim())) {
-
+                    adocao.getStatus().equalsIgnoreCase(status.trim())) {
                 resultado.add(adocao);
             }
         }
 
-        return resultado;
+        return Collections.unmodifiableList(resultado);
     }
 }
