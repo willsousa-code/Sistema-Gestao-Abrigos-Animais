@@ -1,14 +1,17 @@
+
 package view;
 
 import java.util.List;
-import java.util.Scanner;
+
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import model.Relatorio;
 import service.RelatorioService;
 
 public class RelatorioView {
 
-    private Scanner entrada = new Scanner(System.in);
     private RelatorioService relatorioService;
 
     public RelatorioView(RelatorioService relatorioService) {
@@ -19,58 +22,159 @@ public class RelatorioView {
 
         List<Relatorio> relatorios = relatorioService.listar();
 
-        System.out.println("\n===== RELATÓRIOS DO SISTEMA =====");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("===== RELATÓRIOS DO SISTEMA =====\n\n");
 
         if (relatorios.isEmpty()) {
-            System.out.println("Nenhum relatório cadastrado.");
-            return;
+
+            texto.append("Nenhum relatório cadastrado.");
+
+        } else {
+
+            for (Relatorio relatorio : relatorios) {
+
+                texto.append("ID: ")
+                    .append(relatorio.getId())
+                    .append("\n");
+
+                texto.append("Tipo: ")
+                    .append(relatorio.getTipo())
+                    .append("\n");
+
+                texto.append("------------------------------\n");
+            }
         }
 
-        for (Relatorio r : relatorios) {
-
-            System.out.println("ID: " + r.getId());
-            System.out.println("Tipo: " + r.getTipo());
-
-            System.out.println("-------------------------");
-        }
+        mostrarTexto(
+            texto.toString(),
+            "Relatórios do sistema"
+        );
     }
 
     public void buscarPorTipo() {
 
-        System.out.print("Digite o tipo do relatório: ");
-        String tipo = entrada.nextLine();
+        String tipo = JOptionPane.showInputDialog(
+            null,
+            "Digite o tipo do relatório:",
+            "Buscar relatório",
+            JOptionPane.QUESTION_MESSAGE
+        );
 
-        List<Relatorio> relatorios =
-            relatorioService.buscarPorTipo(tipo);
+        if (tipo == null) return;
 
-        if (relatorios.isEmpty()) {
-            System.out.println("Nenhum relatório encontrado.");
-            return;
-        }
+        try {
 
-        System.out.println("\n===== RESULTADO DA BUSCA =====");
+            List<Relatorio> relatorios =
+                relatorioService.buscarPorTipo(tipo);
 
-        for (Relatorio r : relatorios) {
+            StringBuilder texto = new StringBuilder();
 
-            System.out.println("Código: " + r.getId());
-            System.out.println("Tipo: " + r.getTipo());
+            texto.append("===== RESULTADO DA BUSCA =====\n\n");
 
-            System.out.println("-------------------------");
+            if (relatorios.isEmpty()) {
+
+                texto.append("Nenhum relatório encontrado.");
+
+            } else {
+
+                for (Relatorio relatorio : relatorios) {
+
+                    texto.append("Código: ")
+                        .append(relatorio.getId())
+                        .append("\n");
+
+                    texto.append("Tipo: ")
+                        .append(relatorio.getTipo())
+                        .append("\n");
+
+                    texto.append("------------------------------\n");
+                }
+            }
+
+            mostrarTexto(
+                texto.toString(),
+                "Resultado da busca"
+            );
+
+        } catch (RuntimeException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro na busca",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     public void excluir() {
 
         try {
-            System.out.print("ID do relatório: ");
-            int id = Integer.parseInt(entrada.nextLine());
+
+            String entradaId = JOptionPane.showInputDialog(
+                null,
+                "Digite o ID do relatório que deseja excluir:",
+                "Excluir relatório",
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (entradaId == null) return;
+
+            int id = Integer.parseInt(entradaId);
+
+            int confirmacao = JOptionPane.showConfirmDialog(
+                null,
+                "Deseja realmente excluir este relatório?",
+                "Confirmar exclusão",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirmacao != JOptionPane.YES_OPTION) return;
 
             relatorioService.excluir(id);
 
-            System.out.println("Relatório excluído com sucesso!");
+            JOptionPane.showMessageDialog(
+                null,
+                "Relatório excluído com sucesso!",
+                "Operação concluída",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Digite um ID numérico válido!",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
 
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Erro na exclusão",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
+    }
+
+    private void mostrarTexto(String conteudo, String titulo) {
+
+        JTextArea area = new JTextArea(conteudo, 18, 40);
+
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+
+        JOptionPane.showMessageDialog(
+            null,
+            new JScrollPane(area),
+            titulo,
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 }
