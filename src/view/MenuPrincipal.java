@@ -1,12 +1,22 @@
 
 package view;
 
-import java.util.Scanner;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.JPasswordField;
+import javax.swing.BoxLayout;
+
+import model.Usuario;
+import model.Administrador;
+import model.Veterinario;
+import model.Voluntario;
+
 import main.SistemaContexto;
 
 public class MenuPrincipal {
 
-    private Scanner entrada = new Scanner(System.in);
     private SistemaContexto contexto;
 
     private MenuAdministrador administrador;
@@ -23,45 +33,82 @@ public class MenuPrincipal {
 
     public void exibir() {
 
-        int opcao = -1;
+        boolean continuar = true;
 
-        while (opcao != 0) {
+        while (continuar) {
 
-            System.out.println("\n===== SISTEMA DE ABRIGOS E RESGATES =====");
-            System.out.println("1 - Administrador");
-            System.out.println("2 - Veterinário");
-            System.out.println("3 - Voluntário");
-            System.out.println("0 - Sair");
-            System.out.print("Escolha uma opção: ");
+            JPanel painel = new JPanel();
+            painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
+
+            JTextField campoEmail = new JTextField(20);
+            JPasswordField campoSenha = new JPasswordField(20);
+
+            painel.add(new JLabel("E-mail:"));
+            painel.add(campoEmail);
+
+            painel.add(new JLabel("Senha:"));
+            painel.add(campoSenha);
+
+            int opcao = JOptionPane.showConfirmDialog(
+                null,
+                painel,
+                "Sistema de Abrigos e Resgates - Login",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+            );
+
+            if (opcao != JOptionPane.OK_OPTION) {
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Sistema encerrado. Até logo!"
+                );
+                break;
+            }
+
+            String email = campoEmail.getText();
+            String senha = new String(campoSenha.getPassword());
 
             try {
-                opcao = Integer.parseInt(entrada.nextLine());
 
-                switch (opcao) {
-                    case 1:
-                        administrador.exibir();
-                        break;
+                Usuario usuario = contexto.usuarioService.autenticar(
+                    email,
+                    senha
+                );
 
-                    case 2:
-                        veterinario.exibir();
-                        break;
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Bem-vindo(a), " + usuario.getNome() + "!\n"
+                    + "Perfil: " + usuario.getTipoUsuario(),
+                    "Login realizado",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
 
-                    case 3:
-                        voluntario.exibir();
-                        break;
+                if (usuario instanceof Administrador) {
+                    administrador.exibir();
 
-                    case 0:
-                        System.out.println("Sistema encerrado!");
-                        break;
+                } else if (usuario instanceof Veterinario) {
+                    veterinario.exibir();
 
-                    default:
-                        System.out.println("Opção inválida!");
+                } else if (usuario instanceof Voluntario) {
+                    voluntario.exibir();
+
+                } else {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Tipo de usuário não reconhecido!"
+                    );
                 }
 
-            } catch (NumberFormatException e) {
-                System.out.println("Digite apenas números!");
+            } catch (IllegalArgumentException e) {
+
+                JOptionPane.showMessageDialog(
+                    null,
+                    e.getMessage(),
+                    "Falha no login",
+                    JOptionPane.ERROR_MESSAGE
+                );
             }
+
         }
     }
 }
-
