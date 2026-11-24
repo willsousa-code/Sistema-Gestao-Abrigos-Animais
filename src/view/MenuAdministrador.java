@@ -1,7 +1,7 @@
 
 package view;
 
-import java.util.Scanner;
+import javax.swing.JOptionPane;
 
 import main.SistemaContexto;
 import model.Administrador;
@@ -9,7 +9,6 @@ import model.Usuario;
 
 public class MenuAdministrador {
 
-    private Scanner entrada = new Scanner(System.in);
     private SistemaContexto contexto;
 
     private AnimalView animalView;
@@ -20,6 +19,7 @@ public class MenuAdministrador {
     private RelatorioView relatorioView;
 
     public MenuAdministrador(SistemaContexto contexto) {
+
         this.contexto = contexto;
 
         animalView = new AnimalView(contexto.animalService);
@@ -38,258 +38,327 @@ public class MenuAdministrador {
 
     public void exibir() {
 
-        int opcao = -1;
+        boolean continuar = true;
 
-        while (opcao != 0) {
+        while (continuar) {
 
-            System.out.println("\n===== MENU DO ADMINISTRADOR =====");
-            System.out.println("1 - Gerenciar animais");
-            System.out.println("2 - Gerenciar usuários");
-            System.out.println("3 - Aprovar adoções");
-            System.out.println("4 - Gerenciar eventos");
-            System.out.println("5 - Gerenciar atividades");
-            System.out.println("6 - Relatórios");
-            System.out.println("0 - Voltar");
-            System.out.print("Escolha uma opção: ");
+            String[] opcoes = {
+                "Gerenciar animais",
+                "Gerenciar usuários",
+                "Aprovar adoções",
+                "Gerenciar eventos",
+                "Gerenciar atividades",
+                "Relatórios",
+                "Voltar"
+            };
+
+            int opcao = JOptionPane.showOptionDialog(
+                null,
+                "Bem-vindo ao painel administrativo!\n\n"
+                    + "Selecione uma funcionalidade:",
+                "Sistema de Abrigos e Resgates - Administrador",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                opcoes,
+                opcoes[0]
+            );
 
             try {
-                opcao = Integer.parseInt(entrada.nextLine());
 
                 switch (opcao) {
-                    case 1:
+
+                    case 0:
                         animalView.exibir();
                         break;
 
-                    case 2:
+                    case 1:
                         usuarioView.exibir();
                         break;
 
-                    case 3:
+                    case 2:
                         gerenciarAdocoes();
                         break;
 
-                    case 4:
+                    case 3:
                         gerenciarEventos();
                         break;
 
-                    case 5:
+                    case 4:
                         gerenciarAtividades();
                         break;
 
-                    case 6:
+                    case 5:
                         gerenciarRelatorios();
                         break;
 
-                    case 0:
-                        System.out.println("Voltando ao menu principal...");
+                    case 6:
+                    case JOptionPane.CLOSED_OPTION:
+                        continuar = false;
                         break;
 
                     default:
-                        System.out.println("Opção inválida!");
+                        continuar = false;
+                        break;
                 }
 
-            } catch (NumberFormatException e) {
-                System.out.println("Digite apenas números!");
             } catch (RuntimeException e) {
-                System.out.println("Erro: " + e.getMessage());
+
+                JOptionPane.showMessageDialog(
+                    null,
+                    e.getMessage(),
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE
+                );
             }
         }
     }
 
     private void gerenciarAdocoes() {
 
-        int opcao = -1;
+        String[] opcoes = {
+            "Listar solicitações",
+            "Aprovar adoção",
+            "Rejeitar adoção",
+            "Voltar"
+        };
 
-        while (opcao != 0) {
+        int opcao = JOptionPane.showOptionDialog(
+            null,
+            "Gerenciamento de adoções",
+            "Adoções",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            opcoes,
+            opcoes[0]
+        );
 
-            System.out.println("\n===== GERENCIAMENTO DE ADOÇÕES =====");
-            System.out.println("1 - Listar solicitações");
-            System.out.println("2 - Aprovar adoção");
-            System.out.println("3 - Rejeitar adoção");
-            System.out.println("0 - Voltar");
-            System.out.print("Escolha: ");
+        try {
 
-            try {
-                opcao = Integer.parseInt(entrada.nextLine());
+            switch (opcao) {
 
-                switch (opcao) {
-                    case 1:
-                        adocaoView.listar();
-                        break;
+                case 0:
+                    adocaoView.listar();
+                    break;
 
-                    case 2: {
-                        Administrador administrador = obterAdministrador();
+                case 1: {
+                    Administrador administrador = obterAdministrador();
+                    if (administrador != null) {
                         adocaoView.aprovar(administrador);
-                        break;
                     }
-
-                    case 3: {
-                        Administrador administrador = obterAdministrador();
-                        adocaoView.rejeitar(administrador);
-                        break;
-                    }
-
-                    case 0:
-                        break;
-
-                    default:
-                        System.out.println("Opção inválida!");
+                    break;
                 }
 
-            } catch (NumberFormatException e) {
-                System.out.println("Digite apenas números!");
-            } catch (RuntimeException e) {
-                System.out.println("Erro: " + e.getMessage());
+                case 2: {
+                    Administrador administrador = obterAdministrador();
+                    if (administrador != null) {
+                        adocaoView.rejeitar(administrador);
+                    }
+                    break;
+                }
+
+                default:
+                    break;
             }
+
+        } catch (RuntimeException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                e.getMessage(),
+                "Erro nas adoções",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     private void gerenciarEventos() {
 
-        int opcao = -1;
+        String[] opcoes = {
+            "Cadastrar evento",
+            "Listar eventos",
+            "Desativar evento",
+            "Voltar"
+        };
 
-        while (opcao != 0) {
+        int opcao = JOptionPane.showOptionDialog(
+            null,
+            "Gerenciamento de eventos",
+            "Eventos",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            opcoes,
+            opcoes[0]
+        );
 
-            System.out.println("\n===== GERENCIAMENTO DE EVENTOS =====");
-            System.out.println("1 - Cadastrar evento");
-            System.out.println("2 - Listar eventos");
-            System.out.println("3 - Desativar evento");
-            System.out.println("0 - Voltar");
-            System.out.print("Escolha: ");
+        try {
 
-            try {
-                opcao = Integer.parseInt(entrada.nextLine());
+            switch (opcao) {
 
-                switch (opcao) {
-                    case 1:
-                        eventoView.cadastrar();
-                        break;
+                case 0:
+                    eventoView.cadastrar();
+                    break;
 
-                    case 2:
-                        eventoView.listar();
-                        break;
+                case 1:
+                    eventoView.listar();
+                    break;
 
-                    case 3:
-                        eventoView.desativar();
-                        break;
+                case 2:
+                    eventoView.desativar();
+                    break;
 
-                    case 0:
-                        break;
-
-                    default:
-                        System.out.println("Opção inválida!");
-                }
-
-            } catch (NumberFormatException e) {
-                System.out.println("Digite apenas números!");
-            } catch (RuntimeException e) {
-                System.out.println("Erro: " + e.getMessage());
+                default:
+                    break;
             }
+
+        } catch (RuntimeException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                e.getMessage(),
+                "Erro nos eventos",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     private void gerenciarAtividades() {
 
-        int opcao = -1;
+        String[] opcoes = {
+            "Cadastrar atividade",
+            "Listar atividades",
+            "Voltar"
+        };
 
-        while (opcao != 0) {
+        int opcao = JOptionPane.showOptionDialog(
+            null,
+            "Gerenciamento de atividades",
+            "Atividades",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            opcoes,
+            opcoes[0]
+        );
 
-            System.out.println("\n===== GERENCIAMENTO DE ATIVIDADES =====");
-            System.out.println("1 - Cadastrar atividade");
-            System.out.println("2 - Listar atividades");
-            System.out.println("0 - Voltar");
-            System.out.print("Escolha: ");
+        try {
 
-            try {
-                opcao = Integer.parseInt(entrada.nextLine());
+            switch (opcao) {
 
-                switch (opcao) {
-                    case 1:
-                        atividadeView.cadastrar();
-                        break;
+                case 0:
+                    atividadeView.cadastrar();
+                    break;
 
-                    case 2:
-                        atividadeView.listar();
-                        break;
+                case 1:
+                    atividadeView.listar();
+                    break;
 
-                    case 0:
-                        break;
-
-                    default:
-                        System.out.println("Opção inválida!");
-                }
-
-            } catch (NumberFormatException e) {
-                System.out.println("Digite apenas números!");
-            } catch (RuntimeException e) {
-                System.out.println("Erro: " + e.getMessage());
+                default:
+                    break;
             }
+
+        } catch (RuntimeException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                e.getMessage(),
+                "Erro nas atividades",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     private void gerenciarRelatorios() {
 
-        int opcao = -1;
+        String[] opcoes = {
+            "Listar relatórios",
+            "Buscar por tipo",
+            "Excluir relatório",
+            "Voltar"
+        };
 
-        while (opcao != 0) {
+        int opcao = JOptionPane.showOptionDialog(
+            null,
+            "Gerenciamento de relatórios",
+            "Relatórios",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            opcoes,
+            opcoes[0]
+        );
 
-            System.out.println("\n===== RELATÓRIOS =====");
-            System.out.println("1 - Listar relatórios");
-            System.out.println("2 - Buscar por tipo");
-            System.out.println("3 - Excluir relatório");
-            System.out.println("0 - Voltar");
-            System.out.print("Escolha: ");
+        try {
 
-            try {
-                opcao = Integer.parseInt(entrada.nextLine());
+            switch (opcao) {
 
-                switch (opcao) {
-                    case 1:
-                        relatorioView.listar();
-                        break;
+                case 0:
+                    relatorioView.listar();
+                    break;
 
-                    case 2:
-                        relatorioView.buscarPorTipo();
-                        break;
+                case 1:
+                    relatorioView.buscarPorTipo();
+                    break;
 
-                    case 3:
-                        relatorioView.excluir();
-                        break;
+                case 2:
+                    relatorioView.excluir();
+                    break;
 
-                    case 0:
-                        break;
-
-                    default:
-                        System.out.println("Opção inválida!");
-                }
-
-            } catch (NumberFormatException e) {
-                System.out.println("Digite apenas números!");
-            } catch (RuntimeException e) {
-                System.out.println("Erro: " + e.getMessage());
+                default:
+                    break;
             }
+
+        } catch (RuntimeException e) {
+
+            JOptionPane.showMessageDialog(
+                null,
+                e.getMessage(),
+                "Erro nos relatórios",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     private Administrador obterAdministrador() {
 
-        System.out.print("Digite o ID do administrador: ");
-        int id = Integer.parseInt(entrada.nextLine());
+        String identificacao = JOptionPane.showInputDialog(
+            null,
+            "Digite o ID do administrador:",
+            "Identificação administrativa",
+            JOptionPane.QUESTION_MESSAGE
+        );
 
-        Usuario usuario = contexto.usuarioService.buscar(id);
-
-        if (!(usuario instanceof Administrador)) {
-            throw new IllegalArgumentException(
-                "O usuário informado não é um administrador!"
-            );
+        if (identificacao == null) {
+            return null;
         }
 
-        if (!usuario.isAtivo()) {
+        try {
+
+            int id = Integer.parseInt(identificacao.trim());
+
+            Usuario usuario = contexto.usuarioService.buscar(id);
+
+            if (!(usuario instanceof Administrador)) {
+                throw new IllegalArgumentException(
+                    "O usuário informado não é um administrador!"
+                );
+            }
+
+            if (!usuario.isAtivo()) {
+                throw new IllegalArgumentException(
+                    "O administrador está desativado!"
+                );
+            }
+
+            return (Administrador) usuario;
+
+        } catch (NumberFormatException e) {
+
             throw new IllegalArgumentException(
-                "O administrador está desativado!"
+                "Digite um ID numérico válido!"
             );
         }
-
-        return (Administrador) usuario;
     }
 }
