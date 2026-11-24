@@ -1,7 +1,9 @@
 
 package view;
 
-import java.util.Scanner;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import main.SistemaContexto;
 import model.Animal;
@@ -10,7 +12,6 @@ import model.Veterinario;
 
 public class MenuVeterinario {
 
-    private Scanner entrada = new Scanner(System.in);
     private SistemaContexto contexto;
 
     private ConsultaView consultaView;
@@ -37,67 +38,108 @@ public class MenuVeterinario {
         try {
             veterinario = obterVeterinario();
         } catch (RuntimeException e) {
-            System.out.println("Erro: " + e.getMessage());
+            JOptionPane.showMessageDialog(
+                null,
+                "Erro: " + e.getMessage(),
+                "Acesso negado",
+                JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
-        int opcao = -1;
+        boolean continuar = true;
 
-        while (opcao != 0) {
+        while (continuar) {
 
-            System.out.println("\n===== MENU VETERINÁRIO =====");
-            System.out.println("1 - Consultar animais");
-            System.out.println("2 - Registrar consulta");
-            System.out.println("3 - Registrar vacina");
-            System.out.println("4 - Consultar histórico médico");
-            System.out.println("5 - Atualizar informações de saúde");
-            System.out.println("0 - Voltar");
-            System.out.print("Escolha: ");
+            String[] opcoes = {
+                "Consultar animais",
+                "Registrar consulta",
+                "Registrar vacina",
+                "Consultar histórico médico",
+                "Atualizar informações de saúde",
+                "Voltar"
+            };
+
+            int opcao = JOptionPane.showOptionDialog(
+                null,
+                "===== MENU VETERINÁRIO =====\n\n"
+                    + "Bem-vindo(a), " + veterinario.getNome() + "!",
+                "Sistema de Abrigos e Resgates",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                opcoes,
+                opcoes[0]
+            );
 
             try {
-                opcao = Integer.parseInt(entrada.nextLine());
 
                 switch (opcao) {
-                    case 1:
+
+                    case 0:
                         listarAnimais();
                         break;
 
-                    case 2:
+                    case 1:
                         consultaView.cadastrar(veterinario);
                         break;
 
-                    case 3:
+                    case 2:
                         vacinaView.cadastrar(veterinario);
                         break;
 
-                    case 4:
+                    case 3:
                         consultarHistorico();
                         break;
 
-                    case 5:
+                    case 4:
                         atualizarSaude(veterinario);
                         break;
 
-                    case 0:
-                        System.out.println("Voltando ao menu principal...");
+                    case 5:
+                    case JOptionPane.CLOSED_OPTION:
+                        continuar = false;
                         break;
 
                     default:
-                        System.out.println("Opção inválida!");
+                        break;
                 }
 
-            } catch (NumberFormatException e) {
-                System.out.println("Digite um número válido!");
             } catch (RuntimeException e) {
-                System.out.println("Erro: " + e.getMessage());
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Erro: " + e.getMessage(),
+                    "Erro na operação",
+                    JOptionPane.ERROR_MESSAGE
+                );
             }
         }
     }
 
     private Veterinario obterVeterinario() {
 
-        System.out.print("Digite o ID do veterinário: ");
-        int id = Integer.parseInt(entrada.nextLine());
+        String entrada = JOptionPane.showInputDialog(
+            null,
+            "Digite o ID do veterinário:",
+            "Identificação do veterinário",
+            JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (entrada == null) {
+            throw new IllegalArgumentException(
+                "Acesso cancelado pelo usuário."
+            );
+        }
+
+        int id;
+
+        try {
+            id = Integer.parseInt(entrada);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                "Digite um ID numérico válido!"
+            );
+        }
 
         Usuario usuario = contexto.usuarioService.buscar(id);
 
@@ -118,63 +160,117 @@ public class MenuVeterinario {
 
     private void listarAnimais() {
 
-        System.out.println("\n===== ANIMAIS CADASTRADOS =====");
+        StringBuilder texto = new StringBuilder();
+
+        texto.append("===== ANIMAIS CADASTRADOS =====\n\n");
 
         for (Animal animal : contexto.animalService.listarAnimais()) {
-            System.out.println("ID: " + animal.getId());
-            System.out.println("Nome: " + animal.getNome());
-            System.out.println("Espécie: " + animal.getEspecie());
-            System.out.println("Saúde: " + animal.getEstadoSaude());
-            System.out.println("-----------------------------");
+
+            texto.append("ID: ")
+                .append(animal.getId())
+                .append("\n");
+
+            texto.append("Nome: ")
+                .append(animal.getNome())
+                .append("\n");
+
+            texto.append("Espécie: ")
+                .append(animal.getEspecie())
+                .append("\n");
+
+            texto.append("Saúde: ")
+                .append(animal.getEstadoSaude())
+                .append("\n");
+
+            texto.append("-----------------------------\n");
         }
+
+        if (contexto.animalService.listarAnimais().isEmpty()) {
+            texto.append("Nenhum animal cadastrado.");
+        }
+
+        JTextArea area = new JTextArea(texto.toString(), 18, 40);
+        area.setEditable(false);
+
+        JOptionPane.showMessageDialog(
+            null,
+            new JScrollPane(area),
+            "Animais cadastrados",
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private void consultarHistorico() {
 
-        int opcao = -1;
+        String[] opcoes = {
+            "Consultar consultas",
+            "Consultar vacinas",
+            "Voltar"
+        };
 
-        while (opcao != 0) {
+        int opcao = JOptionPane.showOptionDialog(
+            null,
+            "Escolha o histórico que deseja consultar:",
+            "Histórico médico",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.INFORMATION_MESSAGE,
+            null,
+            opcoes,
+            opcoes[0]
+        );
 
-            System.out.println("\n===== HISTÓRICO MÉDICO =====");
-            System.out.println("1 - Consultar consultas");
-            System.out.println("2 - Consultar vacinas");
-            System.out.println("0 - Voltar");
-            System.out.print("Escolha: ");
+        switch (opcao) {
 
-            try {
-                opcao = Integer.parseInt(entrada.nextLine());
+            case 0:
+                consultaView.listar();
+                break;
 
-                switch (opcao) {
-                    case 1:
-                        consultaView.listar();
-                        break;
+            case 1:
+                vacinaView.listar();
+                break;
 
-                    case 2:
-                        vacinaView.listar();
-                        break;
-
-                    case 0:
-                        break;
-
-                    default:
-                        System.out.println("Opção inválida!");
-                }
-
-            } catch (NumberFormatException e) {
-                System.out.println("Digite um número válido!");
-            } catch (RuntimeException e) {
-                System.out.println("Erro: " + e.getMessage());
-            }
+            default:
+                break;
         }
     }
 
     private void atualizarSaude(Veterinario veterinario) {
 
-        System.out.print("Digite o ID do animal: ");
-        int id = Integer.parseInt(entrada.nextLine());
+        String entradaId = JOptionPane.showInputDialog(
+            null,
+            "Digite o ID do animal:",
+            "Atualizar saúde",
+            JOptionPane.QUESTION_MESSAGE
+        );
 
-        System.out.print("Informe o novo estado de saúde: ");
-        String estado = entrada.nextLine();
+        if (entradaId == null) {
+            return;
+        }
+
+        int id;
+
+        try {
+            id = Integer.parseInt(entradaId);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(
+                null,
+                "Digite um ID numérico válido!",
+                "Entrada inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        String estado = JOptionPane.showInputDialog(
+            null,
+            "Informe o novo estado de saúde:",
+            "Atualizar saúde",
+            JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (estado == null) {
+            return;
+        }
 
         contexto.animalService.atualizarSaude(
             id,
@@ -182,6 +278,11 @@ public class MenuVeterinario {
             veterinario
         );
 
-        System.out.println("Informações de saúde atualizadas!");
+        JOptionPane.showMessageDialog(
+            null,
+            "Informações de saúde atualizadas com sucesso!",
+            "Operação concluída",
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 }
